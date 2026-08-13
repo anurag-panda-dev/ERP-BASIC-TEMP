@@ -8,13 +8,29 @@ export const getOrCreateUser = async (clerkId, email, name) => {
     let user = await User.findOne({ clerkId });
 
     if (!user) {
-      user = await User.create({
-        clerkId,
-        email,
-        name,
-        role: 'student',
-      });
-      logger.info(`✅ New user created: ${email}`);
+      // Check if user already exists in DB by email (e.g., from seed Database)
+      const existingUser = await User.findOne({ email: email?.toLowerCase() });
+
+      if (existingUser) {
+        existingUser.clerkId = clerkId;
+        if (name && !existingUser.name) existingUser.name = name;
+        await existingUser.save();
+        user = existingUser;
+        logger.info(`✅ Linked Clerk ID ${clerkId} to existing DB user: ${email} (${user.role})`);
+      } else {
+        // Auto-assign admin/faculty role if email contains 'admin' or 'faculty'
+        const lowerEmail = email?.toLowerCase() || '';
+        const role = lowerEmail.includes('admin') ? 'admin' :
+                     lowerEmail.includes('faculty') ? 'faculty' : 'student';
+
+        user = await User.create({
+          clerkId,
+          email: lowerEmail,
+          name: name || email,
+          role,
+        });
+        logger.info(`✅ New user created: ${email} with role: ${role}`);
+      }
     }
 
     return user;

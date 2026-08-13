@@ -67,7 +67,7 @@ const seedDatabase = async () => {
     const admin = await User.create({
       clerkId: 'admin_clerk_id_' + Date.now(),
       userId: 'admin001',
-      name: 'Admin User',
+      name: 'CampusFlow Admin',
       email: 'admin@campusflow.com',
       phone: '9999999999',
       role: 'admin',
@@ -85,7 +85,23 @@ const seedDatabase = async () => {
 
       // Create faculty
       const faculty = [];
-      for (let i = 0; i < 3; i++) {
+      
+      // Explicit faculty account for CS department
+      if (dept.code === 'CS') {
+        const demoFaculty = await User.create({
+          clerkId: `faculty_demo_cs_` + Date.now(),
+          userId: `faculty_CS_demo`,
+          name: 'Prof. Demo Faculty',
+          email: 'faculty@campusflow.com',
+          phone: '9876543210',
+          role: 'faculty',
+          department: dept._id,
+          avatar: faker.image.avatar(),
+        });
+        faculty.push(demoFaculty);
+      }
+
+      for (let i = faculty.length; i < 3; i++) {
         const f = await User.create({
           clerkId: `faculty_${dept._id}_${i}_` + Date.now(),
           userId: `faculty_${dept.code}_${i + 1}`,
@@ -122,7 +138,23 @@ const seedDatabase = async () => {
 
       // Create students
       const students = [];
-      for (let i = 0; i < 50; i++) {
+      
+      if (dept.code === 'CS') {
+        const demoStudent = await User.create({
+          clerkId: `student_demo_cs_` + Date.now(),
+          userId: `student_CS_demo`,
+          name: 'Sarah Student',
+          email: 'student@campusflow.com',
+          phone: '9123456789',
+          role: 'student',
+          department: dept._id,
+          semester: 2,
+          avatar: faker.image.avatar(),
+        });
+        students.push(demoStudent);
+      }
+
+      for (let i = students.length; i < 50; i++) {
         const semester = Math.floor(i / 10) + 1; // Distribute students across semesters
         const student = await User.create({
           clerkId: `student_${dept._id}_${i}_` + Date.now(),
